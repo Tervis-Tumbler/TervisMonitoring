@@ -1,4 +1,4 @@
-﻿#requires -module TervisMailMessage
+﻿#Requires -modules InvokeSQL, PowerShellApplication, TervisMailMessage, TervisWCS
 
 function Install-TervisMonitoring {
     param (
@@ -79,29 +79,6 @@ function Test-ConveyorScaleSameWeight {
     if (-not $ConveyorScaleNumberOfUniqueWeights) {
         Throw "Something went wrong"
     }
-}
-
-function Get-ConveyorScaleNumberOfUniqueWeights {
-    param (
-        [Parameter(Mandatory)]$NumberOfBoxesToSample
-    )
-    $Query = @"
-SELECT top $NumberOfBoxesToSample
-    ts,
-    weight
-FROM "qc"."ScaleLog"
-order by ts DESC 
-"@
-
-    $Results = Invoke-SQLODBC -DataSourceName tervis -SQLCommand $Query | 
-    ConvertFrom-DataRow
-
-    $ConveyorScaleNumberOfUniqueWeights = $Results | 
-    Group-Object -Property Weight | 
-    measure | 
-    select -ExpandProperty count
-
-    $ConveyorScaleNumberOfUniqueWeights
 }
 
 function Send-ConveyorScaleSameWeightMessage {
