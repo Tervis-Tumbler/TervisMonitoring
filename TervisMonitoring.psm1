@@ -2,7 +2,8 @@
 
 function Install-TervisMonitoring {
     param (
-        $PathToScriptForScheduledTask = $PSScriptRoot
+        $PathToScriptForScheduledTask = $PSScriptRoot,
+        [Parameter(Mandatory)]$ComputerName
     )
     Install-PasswordStatePowerShell
 
@@ -10,13 +11,15 @@ function Install-TervisMonitoring {
 
     Install-PowerShellApplicationScheduledTask -PathToScriptForScheduledTask $PathToScriptForScheduledTask `
         -Credential $ScheduledTasksCredential `
-        -ScheduledTaskFunctionName "Send-TervisDNSServerReport" `
-        -RepetitionInterval EveryDayEvery15Minutes
+        -FunctionName "Send-TervisDNSServerReport" `
+        -RepetitionInterval EveryDayEvery15Minutes `
+        -ComputerName $ComputerName
 
     Install-PowerShellApplicationScheduledTask -PathToScriptForScheduledTask $PathToScriptForScheduledTask `
         -Credential $ScheduledTasksCredential `
-        -ScheduledTaskFunctionName "Test-ConveyorScaleSameWeight" `
-        -RepetitionInterval EveryMinuteOfEveryDay
+        -FunctionName "Test-ConveyorScaleSameWeight" `
+        -RepetitionInterval EveryMinuteOfEveryDay `
+        -ComputerName $ComputerName
 
 }
 
