@@ -1,26 +1,36 @@
-﻿#Requires -modules InvokeSQL, PowerShellApplication, TervisMailMessage, TervisWCS
+﻿$ModulePath = (Get-Module -ListAvailable TervisMonitoring).ModuleBase
+. $ModulePath\Definition.ps1
 
 function Install-TervisMonitoring {
     param (
-        $PathToScriptForScheduledTask = $PSScriptRoot,
         [Parameter(Mandatory)]$ComputerName
     )
-    Install-PasswordStatePowerShell
 
-    $ScheduledTasksCredential = Get-PasswordstateCredential -PasswordID 259
+    $ScheduledTasksCredential = Get-PasswordstatePassword -ID 259 -AsCredential
 
-    Install-PowerShellApplicationScheduledTask -PathToScriptForScheduledTask $PathToScriptForScheduledTask `
-        -Credential $ScheduledTasksCredential `
-        -FunctionName "Send-TervisDNSServerReport" `
-        -RepetitionInterval EveryDayEvery15Minutes `
+    Install-PowerShellApplication `
+        -ModuleName TervisMonitoring `
+        -DependentTervisModuleNames "TervisMailMessage"
+        -ScheduledTasksCredential $ScheduledTasksCredential `
+        -ScheduledScriptCommandsString "Send-TervisDNSServerReport" `
+        -ScheduledTaskName "Send-TervisDNSServerReport" `
+        -RepetitionIntervalName EveryDayEvery15Minutes `
         -ComputerName $ComputerName
 
-    Install-PowerShellApplicationScheduledTask -PathToScriptForScheduledTask $PathToScriptForScheduledTask `
-        -Credential $ScheduledTasksCredential `
-        -FunctionName "Test-ConveyorScaleSameWeight" `
-        -RepetitionInterval EveryMinuteOfEveryDay `
+    Install-PowerShellApplication `
+        -ModuleName TervisMonitoring `
+        -DependentTervisModuleNames "InvokeSQL",
+            "TervisMailMessage",
+            "TervisWCSSybase",
+            "TervisPasswordstate",
+            "PasswordstatePowerShell",
+            "WebServicesPowerShellProxyBuilder",
+            "TervisMicrosoft.PowerShell.Utility" `
+        -ScheduledTasksCredential $ScheduledTasksCredential `
+        -ScheduledScriptCommandsString "Test-ConveyorScaleSameWeight" `
+        -ScheduledTaskName "Test-ConveyorScaleSameWeight" `
+        -RepetitionIntervalName EveryMinuteOfEveryDay `
         -ComputerName $ComputerName
-
 }
 
 function Test-TervisDNSServerHealth {
